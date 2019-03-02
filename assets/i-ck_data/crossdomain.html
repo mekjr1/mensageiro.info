@@ -1,0 +1,35 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <script type="text/javascript" src="_js/crossdomain_data/UolRMWorker.js"></script>
+        <script type="text/javascript">
+            function Executor(){
+                this.init = function(){
+                    var referrer = '';
+                    if (document.location.href.toLowerCase().match(/(?:\&|\?)referrer=([\w\:\%\-\/\.\+]+)/)) {
+                       referrer = RegExp.$1; 
+                    } 
+                    
+                    var prd = '';  
+                    if (document.location.href.toLowerCase().match(/(?:\&|\?)prd=([\w\:\%\-\/\.]+)/)) {
+                      prd = RegExp.$1;
+                    }
+
+                    var appender = '';
+                    if (document.location.href.toLowerCase().match(/(?:\&|\?)appender=([\w\:\%\-\/\.]+)/)) {
+                      appender = RegExp.$1;
+                    }
+
+                    var grouping = '';
+                    if (document.location.href.match(/(?:\&|\?)grouping=([\w\:\;\%\-\/\.]+)/)) {
+                      grouping = RegExp.$1;
+                    }
+
+                    new UolRMWorker().execute(appender, prd, grouping, referrer);
+                }                
+            }; 
+        </script>
+    </head>
+    
+    <body onload="new Executor().init();">
+
+</body></html>

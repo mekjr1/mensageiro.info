@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en"><!-- Global site tag (gtag.js) - Google Analytics --><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><script type="text/javascript" async="" src="assets/_js/analytics.js"></script><script async="" src="assets/_js/js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-109345323-1');
+</script>
+    
+ <!-- Javascript -->
+        <script src="assets/_js/jquery-1.js"></script>
+        <script src="assets/_js/bootstrap.js"></script>
+        <script src="assets/_js/jquery.js"></script>
+        <script src="assets/_js/wow.js"></script> 
+        <script src="assets/_js/retina-1.js"></script>
+        <script src="assets/_js/waypoints.js"></script>
+        <script src="assets/_js/scripts.js"></script>
+
+
+
+
+<style>
+.loaderLicenca {
+    border: 16px solid  #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #4f7ab1;
+    width: 80px;
+    height: 80px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 1s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+</style>
+
+
+
+<script>
+
+$( document ).ready(function() {
+
+
+$("#cadCpf").blur(function(){ 
+
+          var identificador = PagSeguroDirectPayment.getSenderHash();
+          document.querySelector("[name='hash']").value = identificador;
+          //$(".hashPagSeguro").value(identificador);
+});
+
+$("#cvv").blur(function(){  //criar token
+
+        numCartao = $("#numCartao").val();
+        cvvCartao = $("#cvv").val();
+        expiracaoMes = $("#mes").val();
+        expiracaoAno = $("#ano").val();
+
+
+       //alert(numCartao + cvvCartao + expiracaoMes +  expiracaoAno);
+        PagSeguroDirectPayment.createCardToken({
+            cardNumber: numCartao,
+            cvv: cvvCartao,
+            expirationMonth: expiracaoMes,
+            expirationYear: expiracaoAno,
+
+            success: function(response){  
+            
+                document.querySelector("[name='creditCardToken']").value = response['card']['token'];
+            },
+            error: function(response){ console.log(response); }
+     });
+});
+
+$("#numCartao").blur(function(){
+
+number = $("#numCartao").val();
+bin = number.toString();
+
+PagSeguroDirectPayment.getBrand( {
+          cardBin: bin,
+          success: function(response) {
+
+            bandeira = response['brand']['name'];
+
+            if(bandeira === 'elo'){
+              $('#img-elo').css("border","3px solid #5d9afc");
+            } else{$('#img-elo').css("border","3px solid white");}
+
+            if(bandeira === 'visa'){
+              $('#img-visa').css("border","3px solid #5d9afc");
+            } else{$('#img-visa').css("border","3px solid white");}
+
+            if(bandeira === 'mastercard'){
+              $('#img-mastercard').css("border","3px solid #5d9afc");
+            } else{$('#img-mastercard').css("border","3px solid white");}
+
+            if(bandeira === 'hipercard'){
+              $('#img-hipercard').css("border","3px solid #5d9afc");
+            } else{$('#img-hipercard').css("border","3px solid white");}
+
+            if(bandeira === 'amex'){
+              $('#img-amex').css("border","3px solid #5d9afc");
+            } else{$('#img-amex').css("border","3px solid white");}
+
+          },
+          error: function(response) {
+
+          }
+      });
+ });
+
+
+$(".btnPrem").click(function(){ 
+        
+        $.ajax({
+            url : 'sessaoPgto.php',
+            type : 'post',
+            dataType : 'json',
+            async : false,
+            complete: function(data){              
+                $(".session").html(data.responseText);
+                PagSeguroDirectPayment.setSessionId(data.responseText);
+            }      
+        });
+    });
+
+
+
+$('#videoModal').on('hidden.bs.modal', function () {
+
+  
+  var src = $('.video').children('iframe').attr('src');
+    
+    $('.video').children('iframe').attr('src', src);
+    $('.modal-background').fadeIn();
+ 
+ 
+});
+   
+
+
+$('#licencaFree').on('hidden.bs.modal', function () {
+    $( "#nomeEscola" ).val("");
+    $( "#emailEscola" ).val("");
+    $( "#senha" ).val("");
+    $(".messages2").html("<div class='alert alert-success alert-dismissible' role='alert'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><strong></span></strong> Para adquirir sua licença <b> FREE </b> basta preencher os <br> dados abaixo e clicar em ''Adquirir Licença''.</div>");
+})
+
+ $("#adquirirLicencaBtn").on('click', function(){
+      
+      
+
+      
+
+      //submit the form
+      $("#adquirirLicencaForm").unbind('submit').bind('submit', function(){
+
+
+        
+
+      	var form = $(this);
+
+        var nome_escola = $('#nomeEscola').val();
+        var email_escola = $('#emailEscola').val();
+        var senha = $('#senha').val();
+        var file_data = $('#imgPerfilSite').prop('files')[0];
+
+if(nome_escola && email_escola && senha){
+     
+     $(".loaderLicenca").show();
+     $(".messages2").hide();
+     
+        
+
+        var data = new FormData();
+        data.append('file', file_data);
+        data.append('nomeEscola', nome_escola);
+        data.append('emailEscola', email_escola);
+        data.append('senha', senha);
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            async: true,
+            data: data,
+            enctype: 'multipart/form-data',
+            cache: false,
+            contentType: false,
+            processData: false,
+            success:function(response){
+
+if(response == 1){
+$('.messages2').html(
+'<div class="alert alert-success alert-dismissible" role="alert">'+
+'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+  '<strong>Licença adquirida com sucesso!</strong>  <br> As informações foram enviadas para seu Email, verifique-as e faça bom uso do ENVIA! :) </div>'); 
+} else {
+
+$('.messages2').html(
+'<div class="alert alert-danger alert-dismissible" role="alert">'+
+'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+  '<strong> O Email informado já está sendo utilizado. </strong> <br> Caso tenha esquecido sua senha, você pode recupera-la na página de Login na opção Esqueci Minha Senha. </div>');
+
+        }  $(".loaderLicenca").hide();
+        $(".messages2").show();//fim do else
+       }//fim do response
+      });//fim do ajax
+        return false;
+        
+    } // fim do IF de verificação dos campos não nulos
+    else {
+      $('.messages2').html(
+        '<div class="alert alert-warning alert-dismissible" role="alert">'+
+        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+    '<strong> Os campos Nome da Escola, Email da Escola e Senha são obrigatórios. </strong> <br> Verifique se os informou corretamente e tente novamente. </div>'); 
+
+        return false;
+     }   
+       });
+
+    });
+
+/*
+
+$("#adquirirLicencaPremBtn").on('click', function(){  
+
+      //submit the form
+      $("#adquirirLicencaPremForm").unbind('submit').bind('submit', function(){
+        
+
+        var form = $(this);
+
+        var nome_escola = $('#nomeEscolaPrem').val();
+        var email_escola = $('#emailEscolaPrem').val();
+        var senha = $('#senha').val();
+        var numCartao = $('#numCartao').val();
+        var nomeTitularCartao = $('#nomeTitularCartao').val();
+        var cadCpf = $('#cadCpf').val();
+        
+
+if(nome_escola && email_escola && senha){
+     
+     $(".loaderLicenca").show();
+     $(".messages2").hide();
+     
+        
+
+        var data = new FormData();
+      
+        data.append('nomeEscola', nome_escola);
+        data.append('emailEscola', email_escola);
+        data.append('senha', senha);
+        data.append('numCartao', numCartao);
+        data.append('nomeTitularCartao', nomeTitularCartao);
+        data.append('cadCpf', cadCpf);
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            async: true,
+            data: data,
+            enctype: 'multipart/form-data',
+            cache: false,
+            contentType: false,
+            processData: false,
+            success:function(response){
+      alert(JSON.stringify(response));
+if(response == 1){
+$('.messages2').html(
+'<div class="alert alert-success alert-dismissible" role="alert">'+
+'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+  '<strong>Licença adquirida com sucesso!</strong>  <br> As informações foram enviadas para seu Email, verifique-as e faça bom uso do ENVIA! :) </div>'); 
+} else {
+
+$('.messages2').html(
+'<div class="alert alert-danger alert-dismissible" role="alert">'+
+'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+  '<strong> O Email informado já está sendo utilizado. </strong> <br> Caso tenha esquecido sua senha, você pode recupera-la na página de Login na opção Esqueci Minha Senha. </div>');
+
+        }  $(".loaderLicenca").hide();
+        $(".messages2").show();//fim do else
+       }//fim do response
+      });//fim do ajax
+        return false;
+        
+    } // fim do IF de verificação dos campos não nulos
+    else {
+      $('.messages2').html(
+        '<div class="alert alert-warning alert-dismissible" role="alert">'+
+        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+    '<strong> Os campos Nome da Escola, Email da Escola e Senha são obrigatórios. </strong> <br> Verifique se os informou corretamente e tente novamente. </div>'); 
+
+        return false;
+     }
+       });
+
+    }); */
+ });
+
+
+
+</script>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>ENVIA - A melhor forma de se comunicar com seus alunos.</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="assets/_css/css_002.css">
+        <link rel="stylesheet" type="text/css" href="assets/_css/css.css">
+        <link rel="stylesheet" href="assets/_css/bootstrap.css">
+        <link rel="stylesheet" href="assets/_css/font-awesome.css">
+        <link rel="stylesheet" href="assets/_css/animate.css">
+		  <link rel="stylesheet" href="assets/_css/form-elements.css">
+        <link rel="stylesheet" href="assets/_css/style.css">
+        <link rel="stylesheet" href="assets/_css/media-queries.css">
+        <link rel="stylesheet" href="assets/_css/normalize.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <!-- Favicon and touch icons -->
+        <link rel="shortcut icon" href="http://envia.io/hotsite/assets/ico/favicon.png">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://envia.io/hotsite/assets/ico/apple-touch-icon-144-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://envia.io/hotsite/assets/ico/apple-touch-icon-114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://envia.io/hotsite/assets/ico/apple-touch-icon-72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="http://envia.io/hotsite/assets/ico/apple-touch-icon-57-precomposed.png">
+
+    <style>.directpaymentgateway {position:absolute; width:0px; height:0px; display:none;}</style></head>
+
+    <body style="" class="">
+
+        <!-- Loader -->
+    	<div class="loader" style="display: none;">
+    		<div class="loader-img" style="display: none;"></div>
+    	</div>
+
+		<!-- Top menu -->
+		<nav class="navbar navbar-inverse navbar-fixed-top navbar-no-bg" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#top-navbar-1">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					
+				</div>
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse" id="top-navbar-1">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a class="scroll-link" href="#top-content">O que é o ENVIA?</a></li>
+                        <li><a class="scroll-link" href="#features">Funcionalidades</a></li>
+                        <!-- <li><a class="scroll-link" href="#about-usuarios">Quem usa?</a></li> -->
+                        <li><a class="scroll-link" href="#features2">Benefícios</a></li>
+						<li><a class="scroll-link" href="#more-features">Adquirir Licença</a></li>
+
+						<!--<li><a class="scroll-link" href="#testimonials">Nosso Time</a></li> -->   
+						<li><a class="scroll-link" href="#how-it-works">Contato</a></li>
+						<li class="login"><a href="http://envia.io/login" target="_blank">Login</a></li>
+					</ul>
+                    
+				</div>
+			</div>
+		</nav>
+
+        <!-- Top content -->
+        <div class="top-content" style="position: relative; z-index: 0; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;">
+
+            <div class="inner-bg">
+                <div class="container ">
+
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2 text intro">
+                        <img src="assets/_img/logoenvia.png" class="logoapresentacao">
+                    
+                            <div class="description wow fadeInLeftBig animated" style="visibility: visible; animation-name: fadeInLeftBig;">
+                            	<p class="descricao">
+	                            	ENVIA é uma ferramenta online que facilita a comunicação entre a <br> escola  e o aluno através do envio de mensagens em massa.
+                            	</p>
+                                                               
+                            </div>
+                            <div class="top-big-link wow fadeInUp animated" style="visibility: visible; animation-name: fadeInUp;">
+
+
+                            	<a class="btn btn-link-1" data-toggle="modal" data-target="#licencaFree">Licença Gratuita</a>
+                                 
+                            	<a class="btn btn-link-2 scroll-link" href="#features">Conheça +</a>
+                                
+                                <a class="ctaVideo" data-toggle="modal" data-target="#videoModal" id="btnModalVideo"> 
+                                    <i class="fas fa-play-circle" style="font-size:48px;"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 745px; width: 1349px; z-index: -999998; position: absolute;"><img style="position: absolute; margin: 0px; padding: 0px; border: medium none; width: 1349px; height: 899.333px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -77.1667px;" src="assets/_img/1.jpg"></div></div>
+
+        <!-- Features -->
+        <div class="features-container section-container">
+	        <div class="container">
+	            <div class="row hide">
+	                <div class="col-sm-12 features section-description wow fadeIn animated" style="visibility: visible; animation-name: fadeIn;">
+	                    <h2>O QUE É O<strong> ENVIA</strong> ? </h2>
+	                    
+	                </div>
+	            </div>
+
+<div class="container">
+                <div class="row ">
+                    <div class="col-sm-12 more-features section-description wow fadeIn animated" style="visibility: visible; animation-name: fadeIn;">
+                        <h2>FUNCIONALIDADES DO <strong> ENVIA </strong> </h2>
+                        
+                    </div>
+                </div>
+                <div class="row rowfuncionalidades">
+                      <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/mensagens.png">
+                                <div class="card-block"> 
+                                    <h4 class="card-title">MENSAGENS EM MASSA</h4>
+                                    <p class="card-text">Envie mensagens para todos os alunos de sua escola de uma só vez,
+                                 com o nome de cada aluno incluso.</p>
+                                    
+                                </div>
+                        </div>
+
+                        
+
+                         <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/pais.png">
+                                <div class="card-block">
+                                     <h4 class="card-title">MENSAGENS PARA RESPONSÁVEIS</h4>
+                                    <p class="card-text">Os responsáveis dos alunos recebem cópias das mensagens enviadas e também é possível contata-los diretamente.</p>
+                                    
+                                </div>
+                        </div>
+
+                        <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/gerenciador.png">
+                                <div class="card-block">
+                                    <h4 class="card-title">GERENCIADOR DE DESTINATÁRIOS</h4>
+                                    <p class="card-text"> Possibilita o envio das mensagens para  alunos de professores, cursos ou turmas específicas.</p>
+                                </div>
+                        </div>
+
+                       
+
+                        <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/excel.png">
+                                <div class="card-block">
+                                    <h4 class="card-title">IMPORTE DO EXCEL</h4>
+                                    <p class="card-text"> Para facilitar o cadastramento dos dados, a ferramenta
+                                disponibiliza recursos para importa-los de planilhas do Excel.</p>
+                                    
+                                </div>
+                        </div>
+
+                        <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/modelos_msg.png">
+                                <div class="card-block">
+                                    <h4 class="card-title">MODELOS DE MENSAGENS</h4>
+                                    <p class="card-text"> Mensagens enviadas repetidamente podem ser cadastradas e selecionadas no momento de enviar. </p>
+                                    
+                                </div>
+                        </div>
+
+
+                        <div class="card" id="card">
+                            <img class="card-img-top" src="assets/_img/aniversario.png">
+                                <div class="card-block">
+                                    <h4 class="card-title">ALUNOS ANIVERSARIANTES</h4>
+                                    <p class="card-text">O ENVIA notifica diariamente se há algum aluno aniversariante e em
+                                 alguns cliques a escola pode enviar suas felicitações.</p>
+                                    
+                                </div>
+                        </div>
+        </div>  
+<!--
+            <a class="scroll-link" href="#about-usuarios"><b> Quem usa o ENVIA? </b></a>
+              </div>
+	           
+	            <div class="row">
+	            	<div class="col-sm-12 section-bottom-button wow fadeInUp">
+
+
+	            	</div>
+	            </div>
+	        </div>
+         
+             QUEM USA 
+        <div class="about-usuarios-container section-container">
+          <div class="container">
+
+              <div class="row">
+                  <div class="col-sm-12 quem_usa section-description wow fadeIn">
+                      <h2>ESCOLAS QUE UTILIZAM O <strong> ENVIA</strong></h2>
+                 
+                  </div>
+              </div>
+              <div class="row usuarios">
+                  <div class="col-sm-4 about-usuarios-box wow fadeInUp">
+                    <div class="about-usuarios-photo">
+                      <img src="assets/img/usuarios/sos.png" alt="" data-at2x="assets/img/about/1.jpg">
+                    </div>
+                      
+                      
+                      <div class="about-usuarios-social">
+                    </div>
+                  </div>
+                  <div class="col-sm-4 about-usuarios-box wow fadeInDown">
+                    <div class="about-usuarios-photo">
+                      <img src="assets/img/usuarios/microlins.png" alt="" data-at2x="assets/img/about/2.jpg">
+                    </div>
+                    
+                     
+                    <p>
+                     </p>
+                      <div class="about-usuarios-social">
+                      
+                    </div>
+                  </div>
+                  <div class="col-sm-4 about-usuarios-box wow fadeInUp">
+                    <div class="about-usuarios-photo">
+                      <img src="assets/img/usuarios/fatemic.png" alt="" data-at2x="assets/img/about/3.jpg">
+                    </div>
+                     
+                      <div class="about-usuarios-social">
+                      
+                    </div>
+                  </div>
+              </div>
+          </div>-->
+        </div>
+  
+
+        </div> 
+      
+           <!-- Features -->
+        <div class="features2-container section-container">
+
+                    <h2 class="beneficiosTitulo"> <strong> BENEFÍCIOS </strong> PARA SUA ESCOLA </h2>
+
+                    <!-- beneficios -->
+                    <div class="col-sm-6 more-features-box wow fadeInUp animated" style="visibility: visible; animation-name: fadeInUp;">
+
+                        <div class="more-features-box-text">
+                        
+                            <h3><!-- <i class="fa fa-envelope" aria-hidden="true"></i> <br> --> <strong> <i class="fa fa-thumbs-up" aria-hidden="true"></i> <br>FIDELIZAÇÃO DE ALUNOS </strong></h3>
+                            <div class="more-features-box-text-description">
+                                 Mostre para seu aluno que ele não é apenas um número
+                                    mantendo uma comunicação eficiente e constante
+
+                                 </div>
+                        </div>
+
+                        <div class="more-features-box-text">
+                           
+                            <h3> <!-- <i class="fa fa-male" aria-hidden="true"></i><i class="fa fa-female" aria-hidden="true"></i> <br> --> <strong> <i class="fa fa-money" aria-hidden="true"></i> <br> REDUÇÃO DE CUSTOS </strong> </h3>
+                            <div class="more-features-box-text-description">
+                                 
+                                 Utilizando o ENVIA sua escola reduz consideravelmente
+                                os custos com ligações e envios de SMS.
+
+                            
+                            </div>
+                        </div>
+                        
+                        <div class="more-features-box-text">
+                            
+                            <h3><!-- <i class="fa fa-file-text" aria-hidden="true"></i> <br> --> <strong> <i class="fa fa-line-chart" aria-hidden="true"></i> <br> MATRÍCULAS E REMATRÍCULAS </strong></h3>
+                            <div class="more-features-box-text-description">
+                                Alunos satisfeitos continuam na escola e a
+                                    divulgam para seus conhecidos, gerando novas matrículas.
+
+                            </div>
+                        </div>
+                
+                </div> 
+                <div class="col-sm-6 more-features-box wow fadeInUp pull-right animated" style="visibility: visible; animation-name: fadeInUp;">
+
+                        <div class="more-features-box-text">
+                            <h3><!-- <i class="fa fa-users" aria-hidden="true"></i> <br> --> <strong> <i class="fa fa-clock-o" aria-hidden="true"></i> <br> OTIMIZAÇÃO DE TEMPO </strong></h3>
+                            <div class="more-features-box-text-description">
+                                 Invista menos tempo ao contatar os alunos,
+                                    com o ENVIA as mensagens são  enviadas em questão de segundos.
+                            </div>
+                        </div>
+
+                       
+                        <div class="more-features-box-text">
+                            
+                            <h3><!-- <i class="fa fa-birthday-cake" aria-hidden="true"></i> <br> --><strong><i class="fa fa-bullhorn" aria-hidden="true"></i> <br> PRATICIDADE NA COMUNICAÇÃO </strong></h3>
+                            <div class="more-features-box-text-description">
+                                 Contate qualquer aluno ou responsável facilmente em situações de
+                                    urgência ou imprevistos.
+
+                                 
+                            </div>
+                        </div>
+
+                 
+                    <div class="more-features-box-text">
+                            
+                            <h3><!-- <i class="fa fa-file-excel-o" aria-hidden="true"></i> <br> --><strong> <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> <br> PREVENÇÃO DE PROBLEMAS</strong></h3>
+                            <div class="more-features-box-text-description">
+                                Evite problemas por falta de eficiência na comunicação, como
+                                comparecimento de alunos em aulas desmarcadas.
+
+                            </div>
+                        </div>
+                       
+
+                    </div>
+
+                </div>
+
+                
+                <a class="btn btn-link-1 scroll-link adquirir" href="#more-features">Experimentar grátis por 30 dias!</a>
+         
+
+
+
+        <!-- How it works -->
+        <div class="more-features more-features-container">
+	        <div class="container">
+
+          
+
+	            <div class="row">
+	                <div class="col-sm-12 how-it-works section-description wow fadeIn animated" style="visibility: visible; animation-name: fadeIn;">
+	                    <h2>Adquira sua<strong> Licença</strong></h2>
+	                  
+	                </div>
+	            </div>
+	            <div class="row"><center>
+
+
+<div class="table-responsive"> <!-- @well -->
+<table class="table table-striped">
+  <thead class="thead-default">
+    <tr>
+      <th class="headTable"></th>
+      <th class="free first">FREE</th>
+      <th class="premium firstp">PREMIUM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Envios ilimitados</td>
+      <td class="free"><img src="assets/_img/check.png"></td>
+      <td class="premium"><img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td>Cópias das mensagens para os Responsáveis</td>
+       <td class="free"><img src="assets/_img/check.png"></td>
+       <td class="premium"><img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td>Verificação de Aniversariantes Diária</td>
+      <td class="free"><img src="assets/_img/check.png"></td>
+      <td class="premium"><img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td>Nome do aluno na mensagem</td>
+      <td class="free"><img src="assets/_img/check.png"></td>
+      <td class="premium"><img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td>Envio de Mensagens via E-mail</td>
+       <td class="free"><img src="assets/_img/check.png"></td>
+      <td class="premium"><img src="assets/_img/check.png"></td>
+    </tr>
+    
+    <tr>
+      <td class="vigencia"><b> Vigência </b> </td>
+      <td class="free vigencia"><b> 30 dias </b></td>
+      <td class="premium vigencia"><b> 1 ano </b></td>
+    </tr>
+    <tr>
+      <td>Valor</td>
+      <td class="free" style="color:#27ae60; font-size:18px;">GRATUITO</td>
+      <td class="premium" style="color:#2980b9; font-size:18px;"> 12x R$ 39,00</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td class="free last"><button data-toggle="modal" data-target="#licencaFree" class="btn btn-success btnFree" id="btnFree"> Adquirir Licença </button></td>
+      <td class="premium"><button data-toggle="modal" data-target="#licencaPrem" class="btn btn-primary btnPrem"> Adquirir Licença </button>
+    </td></tr>
+  </tbody>
+</table>
+</div> <!-- @well -->
+<!-- tabela refeita p/ mobile -->
+<table class="table table-striped visible-xs">
+  <thead class="thead-default">
+    <tr>
+      <th class="free first">FREE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="free">Envios ilimitados <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+       <td class="free">Cópias das mensagens para os Responsáveis<img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="free">Verificação de Aniversariantes Diária <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="free">Nome do Aluno na mensagem <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="free">Envio de Mensagens via E-mail <img src="assets/_img/check.png"></td>
+    </tr>
+   
+    <tr>
+      <td class="free">30 dias</td>
+    </tr>
+    <tr>
+      <td class="free" style="color:#27ae60; font-size:18px;">GRATUITO</td>
+    </tr>
+    <tr>
+      <td class="free last"><button data-toggle="modal" data-target="#licencaFree" class="btn btn-success btnFree"> Adquirir Licença </button></td>
+    </tr>
+  </tbody>
+</table>
+ 
+<table class="table table-striped visible-xs table-bordered">
+  <thead class="thead-default">
+    <tr>
+      <th class="premium firstp">PREMIUM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="premium">Envio de Mensagens em Massa <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="premium">Envios ilimitados <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+       <td class="premium">Cópias das mensagens para os responsáveis <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="premium">Verificação de Aniversariantes Diária <img src="assets/_img/check.png"></td>
+    </tr>
+    <tr>
+      <td class="premium">Nome do Aluno na mensagem <img src="assets/_img/check.png"></td>
+    </tr>
+
+    <tr>
+      <td class="premium">Envio de Mensagens via E-mail <img src="assets/_img/check.png"></td>
+    </tr>
+
+    <tr>
+      <td class="premium">30 dias</td>
+    </tr>
+    <tr>
+      <td class="premium" style="color:#27ae60; font-size:18px;">GRATUITO</td>
+    </tr>
+    <tr>
+      <td class="premium"><button data-toggle="modal" data-target="#licencaPrem" class="btn btn-primary btnPrem"> Adquirir Licença </button>
+    </td></tr>
+  </tbody>
+</table>
+
+
+             </center>  </div>
+
+               </div>
+        </div>
+
+
+
+       
+ <!-- Testimonials -->
+ <!--
+        <div class="testimonials-container section-container">
+          <div class="container">
+              <div class="row">
+                  <div class="col-sm-12 testimonials section-description wow fadeIn">
+                      <h2>NOSSO<strong> TIME</strong></h2>
+                      
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-sm-4 about-us-box wow fadeInUp">
+                    <div class="about-us-photo">
+                      <img src="assets/img/about/1.jpg" alt="" data-at2x="assets/img/about/1.jpg">
+                    </div>
+                      <h3>Felipe Matos</h3>
+                      <p>Desenvolvedor de Software.</p>
+                      <div class="about-us-social">
+                      <a href="https://www.linkedin.com/in/luiz-felipe-n-matos-9702b6b8/" target="_blank"><i class="fa fa-linkedin" ></i></a>
+
+                    </div>
+                  </div>
+                  <div class="col-sm-4 about-us-box wow fadeInDown">
+                    <div class="about-us-photo">
+                      <img src="assets/img/about/2.jpg" alt="" data-at2x="assets/img/about/2.jpg">
+                    </div>
+                    <h3>Daryanne Lima</h3>
+                      <p>Analista de Marketing.</p>
+                    <p>
+                     </p>
+                      <div class="about-us-social">
+                      <a href=https://www.linkedin.com/in/daryanne-lima-b88666b1/" target="_blank"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                  </div>
+                  <div class="col-sm-4 about-us-box wow fadeInUp">
+                    <div class="about-us-photo">
+                      <img src="assets/img/about/3.jpg" alt="" data-at2x="assets/img/about/3.jpg">
+                    </div>
+                      <h3>Leonardo Siqueira</h3>
+                      <p>Designer de Conteúdo.<br>
+                      <div class="about-us-social">
+                      <a href="https://www.linkedin.com/in/leonardo-siqueira-48b018137/" target="_blank"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+-->
+
+<!-- More features -->
+        <div class="how-it-works-container section-container" style="position: relative; z-index: 0; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;">
+
+	       <div class="container">
+	            <div class="row">
+	                <div class="col-sm-6 call-to-action section-description wow fadeInLeftBig animated" style="visibility: visible; animation-name: fadeInLeftBig;">
+	                    <h2 style="color:white; float:left;">ENTRE EM CONTATO CONOSCO</h2>
+	                    
+	    <form action="mail_send.php" method="post" name="formulario" id="formulario">
+            
+                <div class="row contato_form"> <!-- @well -->
+                    
+                        
+                    	<input required="" name="nome" id="nome" placeholder="Nome Completo" class="inputForm" type="text">
+                    
+                    
+                        
+                        <input required="" name="email" id="email" placeholder="Email" class="inputForm" type="email">
+                    
+                </div>
+            
+               
+               <textarea required="" name="mensagem" class="form-control" id="textarea" value="enviar" placeholder="Digite sua mensagem"></textarea>
+            
+
+                <button type="submit" class="btn btn-link-1 scroll-link" id="formbotao" name="nomeDoBotaoEnvioEmail">Enviar</button>
+            
+        </form>
+	                </div>
+	            </div>
+	            <div class="row">
+	            	<div class="col-sm-12 section-bottom-button wow fadeInUp animated" style="visibility: visible; animation-name: fadeInUp;">
+
+	            	</div>
+	            </div>
+	        </div>
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 395px; width: 1349px; z-index: -999998; position: absolute;"><img style="position: absolute; margin: 0px; padding: 0px; border: medium none; width: 1349px; height: 899.333px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -252.167px;" src="assets/_img/1.jpg"></div></div>
+
+
+
+
+
+<!-- Modal do video -->
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content video">
+
+      <div class="modal-body video">
+
+        <iframe src="assets/JFUegWWU_h0.html" width="100%" height="400"></iframe>
+        
+
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+
+ <!-- LICENÇA FREE -->
+<div id="licencaFree" class="modal fade" role="dialog" style="display: none;">
+  <div class="modal-dialog wdt">
+
+    <!-- LICENÇA FREE -->
+    <div class="modal-content modal-lg" id="modalAquisicao">
+
+        <div class="modal-header topModal"><button type="button" class="close" data-dismiss="modal">×</button><h4 class="modal-title">ADQUIRIR LICENÇA FREE</h4></div><div class="modal-body"><div class="messages"><center> <div class="loaderLicenca" style="display:none"></div></center><div class="messages2"><div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button><strong></strong> Para adquirir sua licença <b> FREE </b> basta preencher os <br> dados abaixo e clicar em ''Adquirir Licença''.</div></div><form id="adquirirLicencaForm" class="form-horizontal" enctype="multipart/form-data" action="adquirirLicencaFree.php" method="POST"><div class="modal-body"><div class="messages"></div><div class="form-group grp"><label for="nome" class="col-2 col-form-label pull-left"><b>Nome da Escola:</b></label><input class="form-control col-2" placeholder="Digite o nome da sua escola" id="nomeEscola" name="nomeEscola">
+ <label class="legenda">Informe o Nome e Unidade, Por exemplo: 'Escola Vida - São Paulo'.</label><br>
+</div>
+<div class="form-group grp">
+ <label for="nome" class="col-2 col-form-label pull-left"><b>E-mail da Escola:</b></label>
+ <input class="form-control col-2" placeholder="Digite o E-mail da sua escola" id="emailEscola" name="emailEscola">
+ <label class="legenda">Utilize o email oficial da escola, as mensagens serão enviadas por ele.</label><br>
+</div>
+<div class="form-group grp">
+<label for="nome" class="col-2 col-form-label pull-left"><b>Senha:</b></label>
+<input placeholder="Digite a senha " class="form-control col-2" id="senha" name="senha" type="password">
+<label class="legenda">Para criar uma senha segura utilize letras, números e símbolos.</label><br>
+</div>
+<div class="form-group grp">
+<label for="nome" class="col-2 col-form-label pull-left"><b>Foto de Perfil:</b></label>
+<br><br>
+        <input name="imgPerfilSite" id="imgPerfilSite" class="" type="file">
+</div>
+ <!--tem q aparecer aqui-->
+</div>
+</form></div>
+
+
+
+
+
+
+</div>
+<div class="modal-footer">
+
+<button type="submit" class="adquirirLicencaBtn btn btn-info" id="adquirirLicencaBtn"> Adquirir Licença</button>
+</div>
+</div>
+ 
+</div>
+
+
+	</div>
+
+<!-- LICENÇA premium-->
+<div id="licencaPrem" class="modal fade" role="dialog">
+  <div class="modal-dialog wdt">
+
+    <!-- LICENÇA premium -->
+    <div class="modal-content modal-lg ">
+      <div class="modal-header topModal">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h4 class="modal-title">ADQUIRIR LICENÇA PREMIUM</h4>
+      </div>
+      <div class="modal-body">
+<div class="messages">
+
+
+      <div class="modal-body">
+        <div class="messages"></div>
+
+<form id="adquirirLicencaPremForm" action="pgtoCartao.php" method="POST">
+        <input placeholder="Nome da Escola" id="nomeEscolaPrem" type="text">
+        <input placeholder="Email" id="emailEscolaPrem" name="emailEscola" type="email">
+        <input placeholder="Senha" id="senhaEscola" type="password">
+
+
+        <h1> Dados de pagamento - Cartão de Crédito </h1>
+        <input placeholder="Numero do Cartão de Crédito" id="numCartao" type="text">
+
+        <!-- imagens dos cartões -->
+        <img src="assets/x.html" id="img-visa"> 
+        <img src="assets/x.html" id="img-mastercard"> 
+        <img src="assets/x.html" id="img-elo"> 
+        <img src="assets/x.html" id="img-hipercard"> 
+        <img src="assets/x.html" id="img-amex"> 
+
+        <input id="mes" placeholder="mes" type="text"> <input id="ano" placeholder="ano" type="text">
+        <input id="nomeTitularCartao" name="nomeTitularCartao" placeholder="Nome do titular (como está no cartão)" type="text"> <input placeholder="CPF" id="cadCpf" name="cadCpf" type="text"> <input placeholder="cvv" id="cvv" type="text">
+        <label id="qtdParcelas"> Quantidade de Parcelas: </label> 
+        <select id="qtdParcelas">
+            <option value="1" selected="selected"> 1x </option>
+            <option value="2"> 2x </option>
+            <option value="3"> 3x </option>
+            <option value="4"> 4x </option>
+            <option value="5"> 5x </option>
+            <option value="6"> 6x </option>
+            <option value="7"> 7x </option>
+            <option value="8"> 8x </option>
+            <option value="9"> 9x </option>
+            <option value="10"> 10x </option>
+            <option value="11"> 11x </option>
+            <option value="12"> 12x </option>
+           Total: 
+        </select>
+  
+        <input class="hashPagSeguro" name="hash" type="text">
+        <input class="tokenPagamentoCartao" name="creditCardToken" type="text">
+        <input class="session" type="text">
+
+
+  <input class="adquirirLicencaPremBtn btn btn-info" id="adquirirLicencaPremBtn" value="Adquirir Licença" type="submit"> 
+          
+</form>  
+
+
+           <!--tem q aparecer aqui-->
+      </div>
+    </div>
+</div>
+       
+
+    
+        <!-- Call to action -->
+        <div class="call-to-action-container section-container section-container-image-bg" style="position: relative; z-index: 0; background: rgba(0, 0, 0, 0) none repeat scroll 0% 0%;">
+
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 0px; width: 0px; z-index: -999998; position: absolute;"><img style="position: absolute; margin: 0px; padding: 0px; border: medium none; width: 0px; height: 0px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: 0px;" src="assets/1.jpg"></div></div>
+
+      </div></div></div>
+
+        <!-- Footer -->
+        <footer>
+	        <div class="container">
+	        	<div class="row">
+                    <div class="col-sm-12 footer-social">
+                    	<a href="https://www.facebook.com/pg/enviastartup" target="_blank"><i class="fab fa-facebook"></i></a>
+                    	<a href="https://www.linkedin.com/company/10978812?trk=tyah&amp;trkInfo=clickedVertical%3Acompany%2CclickedEntityId%3A10978812%2Cidx%3A3-4-9%2CtarId%3A1480293370750%2Ctas%3Aenvia" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    	<a href="https://www.youtube.com/channel/UCjwFcQ-qgUW3kEJtScLpPiQ" target="_blank"><i class="fab fa-youtube"></i></a>
+                    </div>
+	            </div>
+	            <div class="row">
+                    <div class="col-sm-12 footer-copyright">
+                    	©Copyright 2017 - StartUp ENVIA - Todos os direitos reservados
+                    </div>
+                </div>
+	        </div>
+        </footer>
+
+
+
+
+        <!--[if lt IE 10]>
+            <script src="assets/js/placeholder.js"></script>
+        <![endif]-->
+
+
+<!-- SANDBOX -->
+<script type="text/javascript" src="assets/_js/pagseguro.js"></script>
+
+<!-- PRODUÇÃO 
+<script type="text/javascript" src="https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"></script>
+-->
+
+    
+
+
+
+
+
+</div><iframe src="https://sandbox.pagseguro.uol.com.br/checkout/direct-payment/i-ck.html" id="directpaymentgateway" class="directpaymentgateway" allowtransparency="true" width="1px" height="1px" frameborder="0"></iframe></body></html>
